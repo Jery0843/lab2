@@ -231,18 +231,22 @@ export class EmailService {
       </html>
     `;
 
-    // Split into 2 large batches to respect daily limits
-    const maxEmails = Math.min(allEmails.length, 250);
+    // Check if members below 300 threshold
+    if (allEmails.length > 300) {
+      console.log(`Too many recipients (${allEmails.length}), limiting to 300`);
+    }
+    
+    const maxEmails = Math.min(allEmails.length, 300);
     const emailsToSend = allEmails.slice(0, maxEmails);
-    const halfSize = Math.ceil(emailsToSend.length / 2);
+    const batch1Size = 80;
     
     console.log(`Sending ${emailsToSend.length}/${allEmails.length} emails in 2 batches`);
     
     let totalSuccess = 0;
     
-    // Batch 1: First half
+    // Batch 1: First 80 emails
     try {
-      const batch1 = emailsToSend.slice(0, halfSize);
+      const batch1 = emailsToSend.slice(0, batch1Size);
       const results1 = await Promise.allSettled(
         batch1.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
       );
@@ -253,9 +257,9 @@ export class EmailService {
       console.error('Batch 1 error:', error);
     }
     
-    // Batch 2: Second half
+    // Batch 2: Remaining emails
     try {
-      const batch2 = emailsToSend.slice(halfSize);
+      const batch2 = emailsToSend.slice(batch1Size);
       const results2 = await Promise.allSettled(
         batch2.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
       );
@@ -389,18 +393,22 @@ export class EmailService {
       </html>
     `;
 
-    // Split into 2 large batches to respect daily limits
-    const maxEmails = Math.min(allEmails.length, 250);
+    // Check if members below 300 threshold
+    if (allEmails.length > 300) {
+      console.log(`Too many recipients (${allEmails.length}), limiting to 300`);
+    }
+    
+    const maxEmails = Math.min(allEmails.length, 300);
     const emailsToSend = allEmails.slice(0, maxEmails);
-    const halfSize = Math.ceil(emailsToSend.length / 2);
+    const batch1Size = 80;
     
     console.log(`Sending ${emailsToSend.length}/${allEmails.length} emails in 2 batches`);
     
     let totalSuccess = 0;
     
-    // Batch 1: First half
+    // Batch 1: First 80 emails
     try {
-      const batch1 = emailsToSend.slice(0, halfSize);
+      const batch1 = emailsToSend.slice(0, batch1Size);
       const results1 = await Promise.allSettled(
         batch1.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
       );
@@ -411,9 +419,9 @@ export class EmailService {
       console.error('Batch 1 error:', error);
     }
     
-    // Batch 2: Second half
+    // Batch 2: Remaining emails
     try {
-      const batch2 = emailsToSend.slice(halfSize);
+      const batch2 = emailsToSend.slice(batch1Size);
       const results2 = await Promise.allSettled(
         batch2.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
       );
