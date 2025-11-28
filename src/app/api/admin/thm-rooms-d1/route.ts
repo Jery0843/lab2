@@ -107,18 +107,16 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Send notification email for completed writeups
+    // Send notification email for completed writeups (async, don't wait)
     if (createdRoom.status === 'Completed' && createdRoom.writeup) {
-      try {
-        await emailService.sendNewWriteupNotification(
-          createdRoom.title,
-          'TryHackMe',
-          'Room',
-          createdRoom.difficulty
-        );
-      } catch (error) {
+      emailService.sendNewWriteupNotification(
+        createdRoom.title,
+        'TryHackMe',
+        'Room',
+        createdRoom.difficulty
+      ).catch(error => {
         console.error('Failed to send THM writeup notification:', error);
-      }
+      });
     }
     
     console.log('Created THM room:', createdRoom.id);
@@ -158,19 +156,17 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Send notification if room was just completed and has writeup
+    // Send notification if room was just completed and has writeup (async, don't wait)
     if (updatedRoom.status === 'Completed' && updatedRoom.writeup && 
         existingRoom?.status !== 'Completed') {
-      try {
-        await emailService.sendNewWriteupNotification(
-          updatedRoom.title,
-          'TryHackMe',
-          'Room',
-          updatedRoom.difficulty
-        );
-      } catch (error) {
+      emailService.sendNewWriteupNotification(
+        updatedRoom.title,
+        'TryHackMe',
+        'Room',
+        updatedRoom.difficulty
+      ).catch(error => {
         console.error('Failed to send THM writeup notification:', error);
-      }
+      });
     }
     
     console.log('Updated THM room:', updatedRoom.id);
