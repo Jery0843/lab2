@@ -231,27 +231,26 @@ export class EmailService {
       </html>
     `;
 
-    // Rate-limited sending: 80 emails per hour
-    const emailsPerHour = 80;
-    const delayBetweenEmails = (60 * 60 * 1000) / emailsPerHour; // ~45 seconds
+    // Send emails in batches without delays (let email providers handle rate limiting)
+    const batchSize = 10;
     let totalSuccess = 0;
 
-    console.log(`Starting rate-limited email sending to ${allEmails.length} recipients (${emailsPerHour}/hour)`);
+    console.log(`Sending emails to ${allEmails.length} recipients in batches of ${batchSize}`);
     
-    for (let i = 0; i < allEmails.length; i++) {
-      const recipient = allEmails[i];
+    for (let i = 0; i < allEmails.length; i += batchSize) {
+      const batch = allEmails.slice(i, i + batchSize);
+      
       try {
-        const success = await this.sendEmail({ to: recipient.email, subject, html });
-        if (success) totalSuccess++;
+        const results = await Promise.allSettled(
+          batch.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
+        );
         
-        console.log(`Email ${i + 1}/${allEmails.length} sent to ${recipient.type}: ${success ? 'success' : 'failed'}`);
+        const successful = results.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
+        totalSuccess += successful;
         
-        // Add delay between emails (except for the last one)
-        if (i < allEmails.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, delayBetweenEmails));
-        }
+        console.log(`Batch ${Math.floor(i / batchSize) + 1}: ${successful}/${batch.length} emails sent`);
       } catch (error) {
-        console.error(`Error sending email to ${recipient.email}:`, error);
+        console.error('Error sending email batch:', error);
       }
     }
 
@@ -296,7 +295,7 @@ export class EmailService {
     return this.sendEmail({ to: 'admin@0jerome.co.in', subject, html });
   }
 
-  async sendNewWriteupNotification(writeupTitle: string, ctfName: string, category: string, difficulty: string): Promise<void> {
+  async sendNewWriteupNotification(writeupTitle: string, platform: string, category: string, difficulty: string): Promise<void> {
     const newsletterDB = new NewsletterDB();
     const subscribers = await newsletterDB.getAllSubscribers();
     const members = await this.getActiveMembers();
@@ -315,6 +314,19 @@ export class EmailService {
 
     const siteUrl = getSiteUrl();
     const subject = `📝 New ${difficulty} Writeup: ${writeupTitle}`;
+    
+    // Dynamic URL based on platform
+    let buttonUrl = `${siteUrl}/ctf`;
+    let platformLabel = platform;
+    
+    if (platform === 'HackTheBox') {
+      buttonUrl = `${siteUrl}/machines/htb`;
+      platformLabel = 'HTB';
+    } else if (platform === 'TryHackMe') {
+      buttonUrl = `${siteUrl}/machines/thm`;
+      platformLabel = 'THM';
+    }
+    
     const html = `
       <!DOCTYPE html>
       <html>
@@ -345,14 +357,14 @@ export class EmailService {
 
               <div class="writeup-card">
                 <h2 style="margin-top: 0; color: #667eea;">${writeupTitle}</h2>
-                <p><strong>CTF:</strong> ${ctfName}</p>
+                <p><strong>Platform:</strong> ${platformLabel}</p>
                 <p><strong>Category:</strong> ${category}</p>
                 <span class="difficulty ${difficulty.toLowerCase()}">${difficulty}</span>
               </div>
 
               <p>Ready to learn new techniques? Check out the writeup now!</p>
 
-              <a href="${siteUrl}/ctf" class="button">View Writeups</a>
+              <a href="${buttonUrl}" class="button">View Writeups</a>
 
               <p>Happy learning! 🎯</p>
             </div>
@@ -365,27 +377,26 @@ export class EmailService {
       </html>
     `;
 
-    // Rate-limited sending: 80 emails per hour
-    const emailsPerHour = 80;
-    const delayBetweenEmails = (60 * 60 * 1000) / emailsPerHour; // ~45 seconds
+    // Send emails in batches without delays (let email providers handle rate limiting)
+    const batchSize = 10;
     let totalSuccess = 0;
 
-    console.log(`Starting rate-limited email sending to ${allEmails.length} recipients (${emailsPerHour}/hour)`);
+    console.log(`Sending emails to ${allEmails.length} recipients in batches of ${batchSize}`);
     
-    for (let i = 0; i < allEmails.length; i++) {
-      const recipient = allEmails[i];
+    for (let i = 0; i < allEmails.length; i += batchSize) {
+      const batch = allEmails.slice(i, i + batchSize);
+      
       try {
-        const success = await this.sendEmail({ to: recipient.email, subject, html });
-        if (success) totalSuccess++;
+        const results = await Promise.allSettled(
+          batch.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
+        );
         
-        console.log(`Email ${i + 1}/${allEmails.length} sent to ${recipient.type}: ${success ? 'success' : 'failed'}`);
+        const successful = results.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
+        totalSuccess += successful;
         
-        // Add delay between emails (except for the last one)
-        if (i < allEmails.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, delayBetweenEmails));
-        }
+        console.log(`Batch ${Math.floor(i / batchSize) + 1}: ${successful}/${batch.length} emails sent`);
       } catch (error) {
-        console.error(`Error sending email to ${recipient.email}:`, error);
+        console.error('Error sending email batch:', error);
       }
     }
 
