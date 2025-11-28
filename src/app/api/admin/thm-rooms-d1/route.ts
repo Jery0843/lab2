@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { THMRoomsDB } from '@/lib/db';
+import { emailService } from '@/lib/email-service';
 import thmRoomsData from '@/data/thm-rooms.json';
 
 // Helper function to generate unique ID
@@ -106,6 +107,20 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Send notification email for completed writeups
+    if (createdRoom.status === 'Completed' && createdRoom.writeup) {
+      try {
+        await emailService.sendNewWriteupNotification(
+          createdRoom.title,
+          'TryHackMe',
+          'Room',
+          createdRoom.difficulty
+        );
+      } catch (error) {
+        console.error('Failed to send THM writeup notification:', error);
+      }
+    }
+    
     console.log('Created THM room:', createdRoom.id);
     return NextResponse.json({ room: createdRoom }, { status: 201 });
   } catch (error) {
@@ -131,6 +146,9 @@ export async function PUT(request: NextRequest) {
     }
     
     const roomsDB = new THMRoomsDB();
+    
+    // Get existing room to check status change
+    const existingRoom = await roomsDB.getRoom(roomData.id);
     const updatedRoom = await roomsDB.updateRoom(roomData.id, roomData);
     
     if (!updatedRoom) {
@@ -138,6 +156,21 @@ export async function PUT(request: NextRequest) {
         { error: 'Failed to update room or room not found' },
         { status: 404 }
       );
+    }
+    
+    // Send notification if room was just completed and has writeup
+    if (updatedRoom.status === 'Completed' && updatedRoom.writeup && 
+        existingRoom?.status !== 'Completed') {
+      try {
+        await emailService.sendNewWriteupNotification(
+          updatedRoom.title,
+          'TryHackMe',
+          'Room',
+          updatedRoom.difficulty
+        );
+      } catch (error) {
+        console.error('Failed to send THM writeup notification:', error);
+      }
     }
     
     console.log('Updated THM room:', updatedRoom.id);
