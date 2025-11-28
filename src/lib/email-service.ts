@@ -231,30 +231,42 @@ export class EmailService {
       </html>
     `;
 
-    // Send emails in batches without delays (let email providers handle rate limiting)
-    const batchSize = 10;
-    let totalSuccess = 0;
-
-    console.log(`Sending emails to ${allEmails.length} recipients in batches of ${batchSize}`);
+    // Split into 2 large batches to respect daily limits
+    const maxEmails = Math.min(allEmails.length, 250);
+    const emailsToSend = allEmails.slice(0, maxEmails);
+    const halfSize = Math.ceil(emailsToSend.length / 2);
     
-    for (let i = 0; i < allEmails.length; i += batchSize) {
-      const batch = allEmails.slice(i, i + batchSize);
-      
-      try {
-        const results = await Promise.allSettled(
-          batch.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
-        );
-        
-        const successful = results.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
-        totalSuccess += successful;
-        
-        console.log(`Batch ${Math.floor(i / batchSize) + 1}: ${successful}/${batch.length} emails sent`);
-      } catch (error) {
-        console.error('Error sending email batch:', error);
-      }
+    console.log(`Sending ${emailsToSend.length}/${allEmails.length} emails in 2 batches`);
+    
+    let totalSuccess = 0;
+    
+    // Batch 1: First half
+    try {
+      const batch1 = emailsToSend.slice(0, halfSize);
+      const results1 = await Promise.allSettled(
+        batch1.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
+      );
+      const successful1 = results1.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
+      totalSuccess += successful1;
+      console.log(`Batch 1: ${successful1}/${batch1.length} emails sent`);
+    } catch (error) {
+      console.error('Batch 1 error:', error);
+    }
+    
+    // Batch 2: Second half
+    try {
+      const batch2 = emailsToSend.slice(halfSize);
+      const results2 = await Promise.allSettled(
+        batch2.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
+      );
+      const successful2 = results2.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
+      totalSuccess += successful2;
+      console.log(`Batch 2: ${successful2}/${batch2.length} emails sent`);
+    } catch (error) {
+      console.error('Batch 2 error:', error);
     }
 
-    console.log(`Completed machine notification: ${totalSuccess}/${allEmails.length} emails sent`);
+    console.log(`Completed: ${totalSuccess}/${emailsToSend.length} emails sent, ${allEmails.length - emailsToSend.length} skipped`);
   }
 
   async sendWriteupAccessNotification(title: string, ctfName: string, email: string, name: string, ip: string): Promise<boolean> {
@@ -377,30 +389,42 @@ export class EmailService {
       </html>
     `;
 
-    // Send emails in batches without delays (let email providers handle rate limiting)
-    const batchSize = 10;
-    let totalSuccess = 0;
-
-    console.log(`Sending emails to ${allEmails.length} recipients in batches of ${batchSize}`);
+    // Split into 2 large batches to respect daily limits
+    const maxEmails = Math.min(allEmails.length, 250);
+    const emailsToSend = allEmails.slice(0, maxEmails);
+    const halfSize = Math.ceil(emailsToSend.length / 2);
     
-    for (let i = 0; i < allEmails.length; i += batchSize) {
-      const batch = allEmails.slice(i, i + batchSize);
-      
-      try {
-        const results = await Promise.allSettled(
-          batch.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
-        );
-        
-        const successful = results.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
-        totalSuccess += successful;
-        
-        console.log(`Batch ${Math.floor(i / batchSize) + 1}: ${successful}/${batch.length} emails sent`);
-      } catch (error) {
-        console.error('Error sending email batch:', error);
-      }
+    console.log(`Sending ${emailsToSend.length}/${allEmails.length} emails in 2 batches`);
+    
+    let totalSuccess = 0;
+    
+    // Batch 1: First half
+    try {
+      const batch1 = emailsToSend.slice(0, halfSize);
+      const results1 = await Promise.allSettled(
+        batch1.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
+      );
+      const successful1 = results1.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
+      totalSuccess += successful1;
+      console.log(`Batch 1: ${successful1}/${batch1.length} emails sent`);
+    } catch (error) {
+      console.error('Batch 1 error:', error);
+    }
+    
+    // Batch 2: Second half
+    try {
+      const batch2 = emailsToSend.slice(halfSize);
+      const results2 = await Promise.allSettled(
+        batch2.map(recipient => this.sendEmail({ to: recipient.email, subject, html }))
+      );
+      const successful2 = results2.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<boolean>).value).length;
+      totalSuccess += successful2;
+      console.log(`Batch 2: ${successful2}/${batch2.length} emails sent`);
+    } catch (error) {
+      console.error('Batch 2 error:', error);
     }
 
-    console.log(`Completed writeup notification: ${totalSuccess}/${allEmails.length} emails sent`);
+    console.log(`Completed: ${totalSuccess}/${emailsToSend.length} emails sent, ${allEmails.length - emailsToSend.length} skipped`);
   }
 
   private async getActiveMembers(): Promise<Array<{email: string, name?: string}>> {
