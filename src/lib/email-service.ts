@@ -25,45 +25,88 @@ export class EmailService {
   }
 
   private async sendEmail(emailData: EmailData): Promise<boolean> {
-    if (!this.apiKey || !this.domain) {
-      console.warn('Mailgun not configured, skipping email send');
-      return false;
+    // Try Mailgun first
+    if (this.apiKey && this.domain) {
+      try {
+        const formData = new FormData();
+        formData.append('from', `0xJerry's Lab <noreply@${this.domain}>`);
+        formData.append('to', emailData.to);
+        formData.append('subject', emailData.subject);
+        formData.append('html', emailData.html);
+        if (emailData.text) {
+          formData.append('text', emailData.text);
+        }
+
+        const basicAuth = typeof btoa === 'function'
+          ? btoa(`api:${this.apiKey}`)
+          : Buffer.from(`api:${this.apiKey}`).toString('base64');
+
+        const response = await fetch(`${this.baseUrl}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${basicAuth}`,
+          },
+          body: formData,
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('Email sent via Mailgun:', result.id);
+          return true;
+        }
+
+        const error = await response.text();
+        console.error('Mailgun failed:', error);
+      } catch (error) {
+        console.error('Mailgun error:', error);
+      }
     }
 
+    // Fallback to Brevo
+    return this.sendEmailViaBrevo(emailData);
+  }
+
+  private async sendEmailViaBrevo(emailData: EmailData): Promise<boolean> {
+    const brevoApiKey = process.env.BREVO_API_KEY;
+    
+    if (!brevoApiKey) {
+      console.warn('Brevo API key not configured');
+      return false;
+    }
+    
     try {
-      const formData = new FormData();
-      formData.append('from', `0xJerry's Lab <noreply@${this.domain}>`);
-      formData.append('to', emailData.to);
-      formData.append('subject', emailData.subject);
-      formData.append('html', emailData.html);
-      if (emailData.text) {
-        formData.append('text', emailData.text);
-      }
-
-      // Build Basic auth header in a Node-safe way
-      const basicAuth = typeof btoa === 'function'
-        ? btoa(`api:${this.apiKey}`)
-        : Buffer.from(`api:${this.apiKey}`).toString('base64');
-
-      const response = await fetch(`${this.baseUrl}/messages`, {
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
-          'Authorization': `Basic ${basicAuth}`,
+          'accept': 'application/json',
+          'api-key': brevoApiKey,
+          'content-type': 'application/json'
         },
-        body: formData,
+        body: JSON.stringify({
+          sender: {
+            name: "0xJerry's Lab",
+            email: "noreply@jerome.co.in"
+          },
+          to: [{
+            email: emailData.to,
+            name: emailData.to.split('@')[0]
+          }],
+          subject: emailData.subject,
+          htmlContent: emailData.html
+        })
       });
 
       if (!response.ok) {
         const error = await response.text();
-        console.error('Mailgun API error:', error);
+        console.error('Brevo API error:', error);
         return false;
       }
 
       const result = await response.json();
-      console.log('Email sent successfully:', result.id);
+      console.log('Email sent via Brevo:', result.messageId);
       return true;
     } catch (error) {
-      console.error('Error sending email:', error);
+      console.error('Brevo error:', error);
       return false;
     }
   }
