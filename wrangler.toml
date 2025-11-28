@@ -1,0 +1,28 @@
+name = "0xjerrys-lab"
+main = "src/index.js"
+compatibility_date = "2024-01-15"
+
+# D1 Database Configuration
+[[d1_databases]]
+binding = "D1_DATABASE"
+database_name = "jerrys-lab"
+database_id = "f74642b8-c77e-456e-9c32-5497d45327cf"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+NODE_ENV = "production"
+ENABLE_REDDIT_API = "false"
+FALLBACK_TO_CURATED = "true"
+
+# Build configuration for Next.js
+[build]
+command = "npm run build"
+
+# Pages configuration for deployment
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# Local development configuration
+[env.development]
+vars = { ENVIRONMENT = "development" }

@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+
+# Block access to admin areas
+Disallow: /admin/
+Disallow: /api/admin/
+
+# Block access to sensitive areas
+Disallow: /api/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow specific API endpoints that provide content
+Allow: /api/tools
+Allow: /api/machines
+Allow: /api/news
+Allow: /api/cve
+
+# Crawl delay (optional - prevents overloading server)
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://0xjerry.jerome.co.in/sitemap.xml
+Sitemap: https://0xjerry.jerome.co.in/sitemap-machines.xml
+Sitemap: https://0xjerry.jerome.co.in/sitemap-tools.xml
+
+# Block specific bots if needed (example)
+# User-agent: BadBot
+# Disallow: /

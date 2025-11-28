@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "env": {
+    "ENABLE_REDDIT_API": "true",
+    "FALLBACK_TO_CURATED": "true"
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "redirects": []
+}

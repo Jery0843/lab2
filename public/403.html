@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>403 — Machine Still Active</title>
+  <meta name="theme-color" content="#0b0f1a"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0f1a;
+      --glass:rgba(255,255,255,0.06);
+      --neon:#00fff0;
+      --hot:#ff007f;
+      --text:#d7e6ff;
+      --muted:#9bb3d1;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; overflow:hidden; background:radial-gradient(1200px 600px at 85% -10%, #1b2140 0%, transparent 60%) var(--bg);
+      color:var(--text); font-family:Inter,system-ui,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;
+    }
+
+    /* Matrix rain canvas sits behind everything */
+    #matrix{position:fixed; inset:0; z-index:0; filter:contrast(120%) saturate(130%)}
+
+    /* Floating orbs for depth */
+    .orb{position:fixed; width:40vmax; height:40vmax; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, rgba(0,255,240,.35), transparent 60%);
+      filter:blur(40px); z-index:0; opacity:.35; pointer-events:none; animation:float 18s ease-in-out infinite}
+    .orb.o2{left:-10vmax; bottom:-10vmax; animation-delay:-6s}
+    .orb.o3{right:-15vmax; top:-15vmax; animation-delay:-12s}
+    @keyframes float{50%{transform:translateY(-2vmax) translateX(2vmax);}}
+
+    .wrap{
+      position:relative; z-index:2; height:100%; display:grid; place-items:center; padding:24px;
+    }
+
+    .card{
+      width:min(820px, 92vw);
+      backdrop-filter: blur(14px) saturate(120%);
+      background:linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04)) ;
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:24px; padding:32px 28px; box-shadow:
+        0 0 0 1px rgba(0,255,240,.25) inset,
+        0 20px 60px rgba(0,0,0,.45),
+        0 0 60px rgba(0,255,240,.07);
+    }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px; padding:6px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.18); color:var(--muted);
+      background:rgba(255,255,255,0.04); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    }
+    .pulse{width:6px; height:6px; border-radius:50%; background:var(--hot); box-shadow:0 0 0 0 rgba(255,0,127,.7); animation:pulse 1.6s infinite}
+    @keyframes pulse{to{box-shadow:0 0 0 16px rgba(255,0,127,0)}}
+
+    .title{
+      font-family:Orbitron,monospace; font-weight:700; letter-spacing:.06em;
+      font-size: clamp(36px, 6vw, 64px); margin:14px 0 8px; color:#fff;
+      text-shadow: 0 0 12px rgba(0,255,240,.35), 0 0 30px rgba(255,0,127,.18);
+      position:relative;
+    }
+    .title .glitch{
+      position:relative; display:inline-block;
+    }
+    .title .glitch::before,
+    .title .glitch::after{
+      content:attr(data-text); position:absolute; left:0; top:0; mix-blend-mode:screen;
+      clip-path: inset(0 0 0 0);
+    }
+    .title .glitch::before{ color:var(--neon); transform:translate(2px,0); animation:shift 2s infinite}
+    .title .glitch::after{ color:var(--hot); transform:translate(-2px,0); animation:shift 2s infinite reverse}
+    @keyframes shift{
+      0%,100%{clip-path: inset(0 0 0 0)}
+      10%{clip-path: inset(20% 0 60% 0)}
+      20%{clip-path: inset(40% 0 30% 0)}
+      30%{clip-path: inset(10% 0 70% 0)}
+      40%{clip-path: inset(60% 0 10% 0)}
+      50%{clip-path: inset(0 0 0 0)}
+    }
+
+    .subtitle{
+      margin:2px 0 18px; color:var(--muted); font-size:clamp(14px,2.4vw,18px);
+    }
+
+    .panel{
+      margin:18px 0 20px; padding:16px; border-radius:16px;
+      background:var(--glass); border:1px dashed rgba(0,255,240,.35); position:relative;
+    }
+    .panel::before{
+      content:""; position:absolute; inset:-1px; border-radius:16px;
+      pointer-events:none; background:linear-gradient(90deg, transparent, rgba(0,255,240,.18), transparent);
+      mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      padding:1px; opacity:.4;
+    }
+
+    .ascii{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px; line-height:1; color:#9ffcff; white-space:pre; user-select:none; opacity:.7;
+      text-shadow:0 0 8px rgba(0,255,240,.25);
+      max-height:180px; overflow:hidden;
+    }
+
+    .quip{ font-size:16px; line-height:1.7; margin:16px 0; }
+    .quip b{ color:#fff }
+    .rotator{ color:var(--neon); font-weight:600 }
+
+    .btnrow{display:flex; flex-wrap:wrap; gap:12px; margin-top:10px}
+    .btn{
+      --g: rgba(0,255,240,.5);
+      display:inline-flex; align-items:center; gap:10px; padding:12px 18px; border-radius:14px;
+      color:#001013; font-weight:700; text-decoration:none; letter-spacing:.02em;
+      background:linear-gradient(180deg, #00fff0, #00dfcf);
+      box-shadow: 0 6px 20px rgba(0,255,240,.25), 0 0 0 1px rgba(0,0,0,.3) inset;
+      transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .btn:hover{ transform: translateY(-2px); filter:saturate(110%); box-shadow:0 10px 28px rgba(0,255,240,.35) }
+    .btn.secondary{
+      background:linear-gradient(180deg, #2c324a, #1c2136);
+      color:var(--text); box-shadow:0 6px 20px rgba(0,0,0,.4), 0 0 0 1px rgba(0,255,240,.25) inset;
+    }
+    .tiny{font-size:12px; color:var(--muted); margin-top:12px}
+
+    .blink{animation:blink 1.2s steps(2,end) infinite}
+    @keyframes blink{to{visibility:hidden}}
+
+    /* Mobile tweaks */
+    @media (max-width:520px){
+      .ascii{display:none}
+      .btn{width:100%; justify-content:center}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix" aria-hidden="true"></canvas>
+  <div class="orb"></div><div class="orb o2"></div><div class="orb o3"></div>
+
+  <div class="wrap">
+    <div class="card" role="region" aria-label="Access denied message">
+      <span class="badge"><span class="pulse"></span> Access Gatekeeper</span>
+      <h1 class="title">
+        <span class="glitch" data-text="403 — ACCESS DENIED">403 — ACCESS DENIED</span>
+      </h1>
+      <p class="subtitle">This write-up is currently <b style="color:var(--hot)">CLASSIFIED</b>. Reason: <b>Machine is still ACTIVE</b> ⚠️</p>
+
+      <div class="panel">
+        <div class="ascii" aria-hidden="true">
+ ▄████▄   ▒█████   ██▓  ███▄ ▄███▓  ▄▄▄       ███▄    █  ▒█████
+▒██▀ ▀█  ▒██▒  ██▒▓██▒ ▓██▒▀█▀ ██▒ ▒████▄     ██ ▀█   █ ▒██▒  ██▒
+▒▓█    ▄ ▒██░  ██▒▒██▒ ▓██    ▓██░ ▒██  ▀█▄  ▓██  ▀█ ██▒▒██░  ██▒
+▒▓▓▄ ▄██▒▒██   ██░░██░ ▒██    ▒██  ░██▄▄▄▄██ ▓██▒  ▐▌██▒▒██   ██░
+▒ ▓███▀ ░░ ████▓▒░░██░ ▒██▒   ░██▒  ▓█   ▓██▒▒██░   ▓██░░ ████▓▒░
+░ ░▒ ▒  ░ ░ ▒░▒░▒░ ░▓   ░ ▒░   ░  ░  ▒▒   ▓▒█░░ ▒░   ▒ ▒ ░ ▒░▒░▒░
+  ░  ▒      ░ ▒ ▒░  ▒ ░ ░  ░      ░   ▒   ▒▒ ░░ ░░   ░ ▒░  ░ ▒ ▒░
+░         ░ ░ ░ ▒   ▒ ░ ░      ░      ░   ▒      ░   ░ ░ ░ ░ ░ ▒
+░ ░           ░ ░   ░          ░          ░  ░         ░     ░ ░
+        </div>
+
+        <p class="quip">
+          Easy there, keyboard warrior 🧑‍💻—this box is <b>still fighting back</b>.<br/>
+          The write-up is locked in a vault guarded by <b>cyber-ninjas</b> and a very sleepy SIEM 🐉.<br/>
+          Once the machine <b>retires</b>, the walkthrough will drop like <span class="rotator"></span><span class="blink">▌</span>
+        </p>
+
+        <div class="btnrow">
+          <a class="btn" href="/">⬅ Back to Home Base</a>
+          <a class="btn secondary" href="https://hackthebox.com" target="_blank" rel="noopener">Hack another box</a>
+        </div>
+        <div class="tiny">Tip: <b>Practice now</b>, flex later. Spoilers are for retired legends only 😉</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ===== Matrix Rain Background ===== */
+    (function(){
+      const c = document.getElementById('matrix');
+      const ctx = c.getContext('2d');
+      const chars = 'アカサタナハマヤラワ0123456789ABCDEF#$%&*+=-';
+      let w, h, cols, drops;
+
+      function resize(){
+        w = c.width = window.innerWidth;
+        h = c.height = window.innerHeight;
+        cols = Math.floor(w / 16);
+        drops = Array(cols).fill(0).map(()=> Math.random()*h/16);
+      }
+      window.addEventListener('resize', resize, {passive:true});
+      resize();
+
+      function draw(){
+        ctx.fillStyle = 'rgba(11,15,26,0.08)';
+        ctx.fillRect(0,0,w,h);
+        ctx.font = '16px monospace';
+        for(let i=0; i<cols; i++){
+          const ch = chars[Math.floor(Math.random()*chars.length)];
+          const x = i*16;
+          const y = drops[i]*16;
+          ctx.fillStyle = Math.random()>0.97 ? '#ff007f' : '#00fff0';
+          ctx.fillText(ch, x, y);
+          drops[i] = (y > h && Math.random() > 0.975) ? 0 : drops[i]+1;
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    /* ===== Typewriter Rotator ===== */
+    (function(){
+      const el = document.querySelector('.rotator');
+      const phrases = [
+        'fresh zero-days ⚡',
+        'clean root shells 💥',
+        'chef-kiss privesc 🍳',
+        'spicy nmap scans 🌶️',
+        'butter-smooth RCE 🧈'
+      ];
+      let i=0, j=0, add=true, hold=0;
+
+      function tick(){
+        if(!el) return;
+        if(add){
+          if(j <= phrases[i].length){ el.textContent = phrases[i].slice(0, j++); }
+          else { add = false; hold = 16; }
+        }else{
+          if(hold-- <= 0){
+            if(j >= 0){ el.textContent = phrases[i].slice(0, j--); }
+            else { add = true; i = (i+1)%phrases.length; }
+          }
+        }
+        requestAnimationFrame(tick);
+      }
+      tick();
+    })();
+
+    /* ===== Konami Code Easter Egg (↑↑↓↓←→←→BA) ===== */
+    (function(){
+      const seq = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+      let pos = 0;
+      window.addEventListener('keydown', e=>{
+        const key = e.key.length===1 ? e.key.toLowerCase() : e.key;
+        if(key === seq[pos]){ pos++; if(pos===seq.length){ pos=0; reveal(); } }
+        else { pos = 0; }
+      });
+      function reveal(){
+        const n = document.createElement('div');
+        n.textContent = 'Nice try! 🕵️  No spoilers while active 😉';
+        n.style.position='fixed'; n.style.bottom='24px'; n.style.left='50%'; n.style.transform='translateX(-50%)';
+        n.style.padding='10px 14px'; n.style.borderRadius='12px';
+        n.style.background='rgba(0,255,240,.12)'; n.style.border='1px solid rgba(0,255,240,.5)';
+        n.style.color='#9ffcff'; n.style.font='600 14px Inter, sans-serif'; n.style.zIndex='5';
+        n.style.backdropFilter='blur(6px)';
+        document.body.appendChild(n);
+        setTimeout(()=> n.remove(), 3000);
+      }
+    })();
+  </script>
+</body>
+</html>
