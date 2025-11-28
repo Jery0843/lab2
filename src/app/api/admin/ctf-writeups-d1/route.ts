@@ -183,18 +183,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send notification email for completed writeups
+    // Send notification email for completed writeups (async, don't wait)
     if (created.status === 'Completed' && created.writeup) {
-      try {
-        await emailService.sendNewWriteupNotification(
-          created.title,
-          created.ctf_name,
-          created.category,
-          created.difficulty
-        );
-      } catch (error) {
+      emailService.sendNewWriteupNotification(
+        created.title,
+        created.ctf_name,
+        created.category,
+        created.difficulty
+      ).catch(error => {
         console.error('Failed to send writeup notification:', error);
-      }
+      });
     }
 
     const isAdmin = await checkAuth(request);
@@ -266,19 +264,17 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // Send notification if writeup was just completed and has content
+    // Send notification if writeup was just completed and has content (async, don't wait)
     if (updated.status === 'Completed' && updated.writeup && 
         existing.status !== 'Completed') {
-      try {
-        await emailService.sendNewWriteupNotification(
-          updated.title,
-          updated.ctf_name,
-          updated.category,
-          updated.difficulty
-        );
-      } catch (error) {
+      emailService.sendNewWriteupNotification(
+        updated.title,
+        updated.ctf_name,
+        updated.category,
+        updated.difficulty
+      ).catch(error => {
         console.error('Failed to send writeup notification:', error);
-      }
+      });
     }
 
     const isAdmin = await checkAuth(request);
