@@ -85,6 +85,7 @@ export async function POST(request: NextRequest) {
     // Set defaults
     const newRoom = {
       id: roomData.id,
+      name: roomData.title, 
       title: roomData.title,
       slug: roomData.slug,
       difficulty: roomData.difficulty,
