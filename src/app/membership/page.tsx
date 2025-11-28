@@ -1,15 +1,74 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
-import { FaLock, FaKey, FaHeart } from 'react-icons/fa';
+import { FaLock, FaKey, FaHeart, FaUsers, FaEnvelope } from 'react-icons/fa';
 import SubscriberSpotlight from '@/components/SubscriberSpotlight';
 
 const Membership = () => {
+  const [stats, setStats] = useState({ members: 0, subscribers: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch('/api/stats');
+        if (response.ok) {
+          const data = await response.json();
+          setStats(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <Layout>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Left Sidebar - Elite Members */}
-        <div className="lg:col-span-1 order-2 lg:order-1">
+        {/* Left Sidebar - Stats & Elite Members */}
+        <div className="lg:col-span-1 order-2 lg:order-1 space-y-6">
+          {/* Paid Members Stats */}
+          <div className="rounded-lg backdrop-blur-sm bg-black/10 light:bg-white/20 border border-white/5 p-4">
+            <h3 className="text-lg font-bold mb-3 text-cyber-green">Paid Members</h3>
+            <div className="bg-terminal-bg border-l-4 border-cyber-green p-3 font-mono text-sm">
+              <div className="flex items-center space-x-3">
+                <span className="text-cyber-green">$</span>
+                <span className="text-cyber-green font-bold">count</span>
+                <span className="text-white">{loading ? '...' : stats.members}</span>
+              </div>
+              <div className="flex items-center space-x-2 mt-1 text-xs text-gray-400">
+                <span className="text-cyber-green">{'>'}</span>
+                <span>status:</span>
+                <span className="text-cyber-blue">active</span>
+                <span className="text-cyber-green animate-pulse">{'█'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Newsletter Subscribers Stats */}
+          <div className="rounded-lg backdrop-blur-sm bg-black/10 light:bg-white/20 border border-white/5 p-4">
+            <h3 className="text-lg font-bold mb-3 text-cyber-green">Newsletter Subscribers</h3>
+            <div className="bg-terminal-bg border-l-4 border-cyber-blue p-3 font-mono text-sm">
+              <div className="flex items-center space-x-3">
+                <span className="text-cyber-blue">$</span>
+                <span className="text-cyber-blue font-bold">count</span>
+                <span className="text-white">{loading ? '...' : stats.subscribers}</span>
+              </div>
+              <div className="flex items-center space-x-2 mt-1 text-xs text-gray-400">
+                <span className="text-cyber-blue">{'>'}</span>
+                <span>status:</span>
+                <span className="text-cyber-green">subscribed</span>
+                <span className="text-cyber-blue animate-pulse">{'█'}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Elite Members */}
           <SubscriberSpotlight 
             type="tiers" 
             title="Elite Members" 
