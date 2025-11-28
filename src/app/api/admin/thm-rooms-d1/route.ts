@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
     // Send notification email for completed writeups (async, don't wait)
     if (createdRoom.status === 'Completed' && createdRoom.writeup) {
       emailService.sendNewWriteupNotification(
-        createdRoom.title,
+        createdRoom.name || createdRoom.title,
         'TryHackMe',
         'Room',
         createdRoom.difficulty
@@ -160,7 +160,7 @@ export async function PUT(request: NextRequest) {
     if (updatedRoom.status === 'Completed' && updatedRoom.writeup && 
         existingRoom?.status !== 'Completed') {
       emailService.sendNewWriteupNotification(
-        updatedRoom.title,
+        updatedRoom.name || updatedRoom.title,
         'TryHackMe',
         'Room',
         updatedRoom.difficulty
